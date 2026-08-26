@@ -16,21 +16,33 @@ CommandArgs = List[str]
 ParsedInput = Tuple[str, CommandArgs]
 
 # Зберігає адресну книгу у файл за допомогою pickle
-def save_data(book: AddressBook, filename: Path = DATA_FILE) -> None:
+def save_data(book: AddressBook, notes: NoteBook, filename: Path = DATA_FILE) -> None:
     # Створюємо папку для даних, якщо її ще немає
     filename.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(filename, "wb") as file:
-        pickle.dump(book, file)
+    data = {
+        "book": book,
+        "notes": notes}
 
-# Завантажує адресну книгу або створює нову, якщо файлу ще немає
-def load_data(filename: Path = DATA_FILE) -> AddressBook:
+    with open(filename, "wb") as file:
+        pickle.dump(data, file)
+# Завантажує контакти та нотатки або створює нову, якщо файлу ще немає
+def load_data(filename: Path = DATA_FILE) -> tuple[AddressBook, NoteBook]:
     try:
         with open(filename, "rb") as file:
-            return pickle.load(file)
-    except FileNotFoundError:
-        return AddressBook()
+            data = pickle.load(file)
 
+        # Новий формат: контакти + нотатки
+        if isinstance(data, dict):
+            book = data.get("book", AddressBook())
+            notes = data.get("notes", NoteBook())
+            return book, notes
+
+        # Старий формат: у файлі був тільки AddressBook
+        return data, NoteBook()
+
+    except FileNotFoundError:
+        return AddressBook(), NoteBook()
 
 def input_error(func: Callable) -> Callable:
     # Декоратор для обробки помилок у функціях команд
@@ -303,9 +315,8 @@ def add_tag(args: CommandArgs, notes: NoteBook) -> str:
     return f"Tag {tag} added to note {note_id}."
 
 def main():
-    # Відновлення адресної книги з попереднього сеансу
-    book = load_data()
-    note_book = NoteBook()
+    # Відновлення контактів та нотаток з попереднього сеансу
+    book, note_book = load_data()
     print("Welcome to the assistant bot!")
 
     # Запуск циклу для обробки команд користувача
@@ -317,7 +328,7 @@ def main():
 
         # Перевірка команди та виклик відповідної функції
         if command in ["close", "exit"]:
-            save_data(book)
+            save_data(book, note_book)
             print("Good bye!")
             break
 
