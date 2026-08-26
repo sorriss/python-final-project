@@ -35,6 +35,22 @@ class NoteBook(UserDict):
 
         return None
 
+        # Шукаємо нотатки за тегами та сортуємо за кількістю збігів
+    def find_by_tag(self, tags):
+        if isinstance(tags, str):
+            tags = tags.split()
+
+        result = []
+
+        for note in self.data.values():
+            matches = sum(tag in note.tags for tag in tags)
+
+            if matches > 0:
+                result.append((matches, note))
+
+        result.sort(key=lambda item: item[0], reverse=True)
+
+        return [note for matches, note in result]
     # Видаляємо нотатку за id
     def delete_note(self, note_id):
         if note_id not in self.data:
