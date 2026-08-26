@@ -37,12 +37,20 @@ class Birthday(Field):
             raise ValueError("Дата народження повинна бути у форматі ДД.ММ.РРРР.")
         super().__init__(date_value)
 
+# Клас для представлення адреси
+class Address(Field):
+    def __init__(self, value):
+        if not value or not str(value).strip():
+            raise ValueError("Адреса не може бути порожньою.")
+        super().__init__(str(value).strip())
+
 # Клас для представлення запису контакту
 class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
         self.birthday = None
+        self.address = None
 
     # Додаємо телефон до запису
     def add_phone(self, phone):
@@ -76,11 +84,16 @@ class Record:
     def add_birthday(self, birthday):
         self.birthday = Birthday(birthday)
 
+    # Додаємо/оновлюємо адресу запису
+    def add_address(self, address):
+        self.address = Address(address)
+
     # Повертаємо рядкове представлення запису
     def __str__(self):
         phones_str = "; ".join(p.value for p in self.phones)
         birthday_str = f", birthday: {self.birthday.value}" if self.birthday else ""
-        return f"Contact name: {self.name.value}, phones: {phones_str}{birthday_str}"
+        address_str = f", address: {self.address.value}" if self.address else ""
+        return f"Contact name: {self.name.value}, phones: {phones_str}{birthday_str}{address_str}"
 
 # Клас для представлення адресної книги
 class AddressBook(UserDict):
@@ -148,6 +161,8 @@ if __name__ == "__main__":
     john_record.add_phone("1234567890")
     john_record.add_phone("5555555555")
     john_record.add_birthday("15.08.1990")
+    john_record.add_address("вул. Хрещатик 1, Київ")
+    assert "address: вул. Хрещатик 1, Київ" in str(john_record)
 
     # Додавання запису John до адресної книги
     book.add_record(john_record)
