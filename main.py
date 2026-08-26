@@ -37,8 +37,8 @@ def input_error(func: Callable) -> Callable:
             return "Not enough arguments provided."
         except ValueError as error: # Обробка помилки значення (наприклад, неправильний формат даних)
             return str(error) if str(error) else "Invalid argument."
-        except KeyError: # Обробка помилки ключа (наприклад, контакт не знайдено)
-            return "Contact not found."
+        except KeyError as error: # Обробка помилки ключа (наприклад, контакт не знайдено)
+            return str(error).strip('"\'') if str(error) else "Contact not found."
 
     return inner
 
