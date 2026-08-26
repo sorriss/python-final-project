@@ -176,6 +176,19 @@ def birthdays(args: CommandArgs, book: AddressBook) -> str:
 
     return "\n".join(f"{item['name']}: {item['congratulation_date']}" for item in upcoming)
 
+@input_error
+def search(args: CommandArgs, book: AddressBook) -> str:
+    # Перевірка на правильну кількість аргументів
+    if len(args) < 1:
+        raise ValueError("Enter a search query.")
+
+    query = " ".join(args)
+    results = book.search(query)
+    if not results:
+        return "Нічого не знайдено"
+
+    return "\n".join(str(record) for record in results)
+
 def main():
     # Відновлення адресної книги з попереднього сеансу
     book = load_data()
@@ -217,6 +230,9 @@ def main():
 
         elif command == "birthdays":
             print(birthdays(args, book))
+
+        elif command == "search":
+            print(search(args, book))
 
         else:
             print("Invalid command.")
