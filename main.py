@@ -6,7 +6,8 @@ import pickle
 from addressbook import AddressBook, Record
 
 
-DATA_FILE = Path(__file__).resolve().parent / "addressbook.pkl"
+DATA_DIR = Path.home() / ".personal_assistant"
+DATA_FILE = DATA_DIR / "addressbook.pkl"
 
 # Тіпізація для контактів, аргументів команд та розпарсеного вводу
 Contacts = Dict[str, str]
@@ -15,6 +16,9 @@ ParsedInput = Tuple[str, CommandArgs]
 
 # Зберігає адресну книгу у файл за допомогою pickle
 def save_data(book: AddressBook, filename: Path = DATA_FILE) -> None:
+    # Створюємо папку для даних, якщо її ще немає
+    filename.parent.mkdir(parents=True, exist_ok=True)
+
     with open(filename, "wb") as file:
         pickle.dump(book, file)
 
