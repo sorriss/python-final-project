@@ -16,16 +16,18 @@ class NoteBook(UserDict):
     def add_note(self, note):
         self.data[note.id] = note
 
-    # Шукаємо нотатку за id або точним текстом
+    # Шукаємо нотатки за id або частиною тексту
     def find_note(self, query):
         if query in self.data:
-            return self.data[query]
+            return [self.data[query]]
 
+        found_notes = []
+        query_lower = query.lower()
         for note in self.data.values():
-            if note.text == query:
-                return note
+            if query_lower in note.text.lower():
+                found_notes.append(note)
 
-        return None
+        return found_notes
 
     # Видаляємо нотатку за id
     def delete_note(self, note_id):

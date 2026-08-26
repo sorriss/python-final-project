@@ -247,11 +247,15 @@ def find_note(args: CommandArgs, notes: NoteBook) -> str:
         raise ValueError("Please provide note id or text.")
 
     query = " ".join(args)
-    note = notes.find_note(query)
-    if note is None:
+    found_notes = notes.find_note(query)
+    if not found_notes:
         raise KeyError(f"Note {query} not found.")
 
-    return f"{note.id}: {note.text}"
+    result = ""
+    for note in found_notes:
+        result += f"{note.id}: {note.text}\n"
+
+    return result.strip()
 
 # Функція редагування нотатки
 @input_error
