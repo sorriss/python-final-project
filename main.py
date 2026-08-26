@@ -315,6 +315,25 @@ def add_tag(args: CommandArgs, notes: NoteBook) -> str:
     note.add_tag(tag)
     return f"Tag {tag} added to note {note_id}."
 
+# Функція пошуку нотаток за тегами
+@input_error
+def find_by_tag(args: CommandArgs, notes: NoteBook) -> str:
+    if not args:
+        raise ValueError("Please provide at least one tag.")
+
+    found_notes = notes.find_by_tag(args)
+
+    if not found_notes:
+        return "No notes found."
+
+    result = "Notes found:\n"
+
+    for note in found_notes:
+        tags = ", ".join(note.tags)
+        result += f"{note.id}: {note.text} (tags: {tags})\n"
+
+    return result.strip()
+
 def main():
     # Відновлення адресної книги з попереднього сеансу
     book = load_data()
@@ -387,6 +406,9 @@ def main():
 
         elif command == "add-tag":
             print(add_tag(args, note_book))
+
+        elif command == "find-by-tag":
+            print(find_by_tag(args,note_book))
 
         else:
             print("Invalid command.")
