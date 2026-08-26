@@ -4,6 +4,7 @@ from pathlib import Path
 import pickle
 
 from addressbook import AddressBook, Record
+from notes import Note, NoteBook
 
 
 DATA_DIR = Path.home() / ".personal_assistant"
@@ -228,9 +229,69 @@ def birthdays(args: CommandArgs, book: AddressBook) -> str:
 
     return "\n".join(f"{item['name']}: {item['congratulation_date']}" for item in upcoming)
 
+# Функція додавання нотатки
+@input_error
+def add_note(args: CommandArgs, notes: NoteBook) -> str:
+    if not args:
+        raise ValueError("Please provide note text.")
+
+    text = " ".join(args)
+    note = Note(text)
+    notes.add_note(note)
+    return f"Note added with id: {note.id}"
+
+# Функція пошуку нотатки
+@input_error
+def find_note(args: CommandArgs, notes: NoteBook) -> str:
+    if not args:
+        raise ValueError("Please provide note id or text.")
+
+    query = " ".join(args)
+    note = notes.find_note(query)
+    if note is None:
+        raise KeyError(f"Note {query} not found.")
+
+    return f"{note.id}: {note.text}"
+
+# Функція редагування нотатки
+@input_error
+def edit_note(args: CommandArgs, notes: NoteBook) -> str:
+    if len(args) < 2:
+        raise ValueError("Please provide note id and new text.")
+
+    note_id = args[0]
+    new_text = " ".join(args[1:])
+    notes.edit_note(note_id, new_text)
+    return "Note updated."
+
+# Функція видалення нотатки
+@input_error
+def delete_note(args: CommandArgs, notes: NoteBook) -> str:
+    if len(args) != 1:
+        raise ValueError("Please provide note id.")
+
+    notes.delete_note(args[0])
+    return "Note deleted."
+
+# Функція показу всіх нотаток
+@input_error
+def show_all_notes(args: CommandArgs, notes: NoteBook) -> str:
+    if args:
+        raise ValueError("This command does not take any arguments.")
+
+    if not notes.data:
+        return "No notes found."
+
+    result = "Notes:\n"
+    for note_id, note in notes.data.items():
+        result += f"{note_id}: {note.text}\n"
+
+    return result.strip()
+
 def main():
     # Відновлення адресної книги з попереднього сеансу
     book = load_data()
+    note_book = NoteBook()
     print("Welcome to the assistant bot!")
 
     # Запуск циклу для обробки команд користувача
@@ -278,6 +339,21 @@ def main():
 
         elif command == "birthdays":
             print(birthdays(args, book))
+
+        elif command == "add-note":
+            print(add_note(args, note_book))
+
+        elif command == "find-note":
+            print(find_note(args, note_book))
+
+        elif command == "edit-note":
+            print(edit_note(args, note_book))
+
+        elif command == "delete-note":
+            print(delete_note(args, note_book))
+
+        elif command == "all-notes":
+            print(show_all_notes(args, note_book))
 
         else:
             print("Invalid command.")
