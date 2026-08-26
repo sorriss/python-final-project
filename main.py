@@ -99,6 +99,7 @@ def change_contact(args: CommandArgs, book: AddressBook) -> str:
         raise KeyError(f"Contact {name} not found.")
     record.edit_phone(old_phone, new_phone)
     return f"Contact {name} updated."
+    
 # Функція видалення телефону 
 @input_error
 def remove_phone(args: CommandArgs, book: AddressBook) -> str:
@@ -110,9 +111,11 @@ def remove_phone(args: CommandArgs, book: AddressBook) -> str:
 
     if record is None:
         raise KeyError(f"Contact {name} not found.")
+        
     if not record.remove_phone(phone):
         raise ValueError(f"Phone {phone} not found.")
     return f"Phone {phone} removed from {name}."
+    
 # Функції показу телефону контакту
 @input_error
 def show_phone(args: CommandArgs, book: AddressBook) -> str:
@@ -222,7 +225,6 @@ def main():
         elif command == "remove-phone":
             print(remove_phone(args, book))
 
-        
         elif command == "phone":
             print(show_phone(args, book))
 
