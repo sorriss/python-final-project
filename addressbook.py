@@ -144,7 +144,21 @@ class AddressBook(UserDict):
             return True
         return False
 
-    def get_upcoming_birthdays(self):
+    # Шукаємо контакти, де query зустрічається в імені, телефоні, email або адресі
+    def search(self, query):
+        query = query.lower()
+        results = []
+        for record in self.data.values():
+            fields = [record.name.value]
+            fields += [p.value for p in record.phones]
+            fields += [e.value for e in record.emails]
+            if record.address:
+                fields.append(record.address.value)
+            if any(query in field.lower() for field in fields):
+                results.append(record)
+        return results
+
+    def get_upcoming_birthdays(self, days=7):
         today = datetime.now().date()
         upcoming = []
 
@@ -168,8 +182,8 @@ class AddressBook(UserDict):
             # Розраховую різницю в днях між сьогоднішньою датою та днем народження
             days_diff = (birthday_this_year - today).days
 
-            # Перевіряю, чи день народження користувача відбудеться протягом наступних 7 днів
-            if 0 <= days_diff <= 7:
+            # Перевіряю, чи день народження користувача відбудеться протягом наступних `days` днів
+            if 0 <= days_diff <= days:
                 congratulation_date = birthday_this_year
 
                 if congratulation_date.weekday() == 5:  # Якщо день народження в суботу
@@ -217,11 +231,17 @@ if __name__ == "__main__":
     jane_record.add_birthday("18.08.1992")
     book.add_record(jane_record)
 
+    assert book.search("Хрещатик") == [john_record]
+    assert book.search("9876543210") == [jane_record]
+    assert book.search("no-such-substring") == []
+
     # Виведення всіх записів у книзі
     for name, record in book.data.items():
         print(record)
 
     print("Upcoming birthdays:", book.get_upcoming_birthdays())
+    assert book.get_upcoming_birthdays() == book.get_upcoming_birthdays(days=7)
+    assert isinstance(book.get_upcoming_birthdays(days=365), list)
 
     # Знаходження та редагування телефону для John
     john = book.find("John")
