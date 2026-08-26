@@ -219,11 +219,22 @@ def show_birthday(args: CommandArgs, book: AddressBook) -> str:
 
 @input_error
 def birthdays(args: CommandArgs, book: AddressBook) -> str:
-    # Перевірка на правильну кількість аргументів
-    if len(args) != 0:
-        raise ValueError("This command does not take any arguments.")
+    # Якщо кількість днів не вказана, використовуємо 7 днів
+    days = 7
 
-    upcoming = book.get_upcoming_birthdays()
+    if len(args) > 1:
+        raise ValueError("Please provide only the number of days.")
+
+    if len(args) == 1:
+        try:
+            days = int(args[0])
+        except ValueError:
+            raise ValueError("Days must be a number.")
+
+        if days < 0:
+            raise ValueError("Days must be zero or greater.")
+
+    upcoming = book.get_upcoming_birthdays(days)
     if not upcoming:
         return "No upcoming birthdays."
 
