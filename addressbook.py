@@ -1,3 +1,4 @@
+import re
 from collections import UserDict
 from datetime import datetime, timedelta
 
@@ -28,6 +29,16 @@ class Phone(Field):
         # Використовуємо метод батьківського класу для ініціалізації значення
         super().__init__(value)
 
+# Клас для представлення email
+class Email(Field):
+    EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+    def __init__(self, value):
+        value = str(value).strip()
+        if not self.EMAIL_PATTERN.match(value):
+            raise ValueError("Email повинен бути у форматі example@domain.com.")
+        super().__init__(value)
+
 # Клас для представлення дня народження
 class Birthday(Field):
     def __init__(self, value):
@@ -51,6 +62,7 @@ class Record:
         self.phones = []
         self.birthday = None
         self.address = None
+        self.emails = []
 
     # Додаємо телефон до запису
     def add_phone(self, phone):
@@ -81,6 +93,10 @@ class Record:
                 return phone_obj
         return None
 
+    # Додаємо email до запису
+    def add_email(self, email):
+        self.emails.append(Email(email))
+
     def add_birthday(self, birthday):
         self.birthday = Birthday(birthday)
 
@@ -93,7 +109,8 @@ class Record:
         phones_str = "; ".join(p.value for p in self.phones)
         birthday_str = f", birthday: {self.birthday.value}" if self.birthday else ""
         address_str = f", address: {self.address.value}" if self.address else ""
-        return f"Contact name: {self.name.value}, phones: {phones_str}{birthday_str}{address_str}"
+        emails_str = f", emails: {'; '.join(e.value for e in self.emails)}" if self.emails else ""
+        return f"Contact name: {self.name.value}, phones: {phones_str}{birthday_str}{address_str}{emails_str}"
 
 # Клас для представлення адресної книги
 class AddressBook(UserDict):
@@ -163,6 +180,13 @@ if __name__ == "__main__":
     john_record.add_birthday("15.08.1990")
     john_record.add_address("вул. Хрещатик 1, Київ")
     assert "address: вул. Хрещатик 1, Київ" in str(john_record)
+    john_record.add_email("john@example.com")
+    assert "emails: john@example.com" in str(john_record)
+    try:
+        john_record.add_email("not-an-email")
+        raise AssertionError("Некоректний email мав бути відхилений.")
+    except ValueError:
+        pass
 
     # Додавання запису John до адресної книги
     book.add_record(john_record)
