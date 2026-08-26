@@ -1,3 +1,4 @@
+import difflib
 from functools import wraps
 from typing import Dict, List, Tuple, Callable
 from pathlib import Path
@@ -116,8 +117,8 @@ def change_contact(args: CommandArgs, book: AddressBook) -> str:
         raise KeyError(f"Contact {name} not found.")
     record.edit_phone(old_phone, new_phone)
     return f"Contact {name} updated."
-    
-# Функція видалення телефону 
+
+# Функція видалення телефону
 @input_error
 def remove_phone(args: CommandArgs, book: AddressBook) -> str:
     if len(args) != 2:
@@ -128,11 +129,11 @@ def remove_phone(args: CommandArgs, book: AddressBook) -> str:
 
     if record is None:
         raise KeyError(f"Contact {name} not found.")
-        
+
     if not record.remove_phone(phone):
         raise ValueError(f"Phone {phone} not found.")
     return f"Phone {phone} removed from {name}."
-    
+
 # Функції показу телефону контакту
 @input_error
 def show_phone(args: CommandArgs, book: AddressBook) -> str:
@@ -377,6 +378,14 @@ def find_by_tag(args: CommandArgs, notes: NoteBook) -> str:
 
     return result.strip()
 
+KNOWN_COMMANDS = [
+    "close", "exit", "hello", "add", "change", "edit-phone", "remove-phone",
+    "phone", "all", "delete", "add-address", "add-email",
+    "add-birthday", "show-birthday", "birthdays", "search",
+    "add-note", "find-note", "edit-note", "delete-note", "all-notes",
+    "add-tag", "find-by-tag",
+]
+
 def main():
     # Відновлення контактів та нотаток з попереднього сеансу
     book, note_book = load_data()
@@ -403,7 +412,7 @@ def main():
 
         elif command == "change":
             print(change_contact(args, book))
-            
+
         elif command == "edit-phone":
             print(change_contact(args, book))
 
@@ -459,7 +468,11 @@ def main():
             print(find_by_tag(args,note_book))
 
         else:
-            print("Invalid command.")
+            matches = difflib.get_close_matches(command, KNOWN_COMMANDS)
+            if matches:
+                print(f"Можливо, ви мали на увазі: {matches[0]}?")
+            else:
+                print("Invalid command.")
 
 if __name__ == "__main__":
     main()
