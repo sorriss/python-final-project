@@ -144,7 +144,7 @@ def delete_contact(args: CommandArgs, book: AddressBook) -> str:
 
     # Видалення контакту або повідомлення про помилку
     if not book.delete(name):
-        raise KeyError
+        raise KeyError(f"Contact {name} not found.")
 
     return f"Contact {name} deleted."
 
