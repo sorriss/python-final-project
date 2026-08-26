@@ -133,6 +133,21 @@ def show_all(book: AddressBook) -> str:
         result += f"{name}: {phones}\n"
     return result.strip()
 
+# Функція видалення контакту
+@input_error
+def delete_contact(args: CommandArgs, book: AddressBook) -> str:
+    # Перевірка на правильну кількість аргументів
+    if len(args) != 1:
+        raise ValueError("Please provide the name of the contact.")
+
+    name = args[0]
+
+    # Видалення контакту або повідомлення про помилку
+    if not book.delete(name):
+        raise KeyError
+
+    return f"Contact {name} deleted."
+
 @input_error
 def add_birthday(args: CommandArgs, book: AddressBook) -> str:
     # Перевірка на правильну кількість аргументів
@@ -208,6 +223,9 @@ def main():
 
         elif command == "all":
             print(show_all(book))
+
+        elif command == "delete":
+            print(delete_contact(args, book))
 
         elif command == "add-birthday":
             print(add_birthday(args, book))
