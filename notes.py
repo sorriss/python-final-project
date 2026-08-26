@@ -25,7 +25,7 @@ class NoteBook(UserDict):
             if note.text == query:
                 return note
 
-        raise KeyError(f"Note {query} not found.")
+        return None
 
     # Видаляємо нотатку за id
     def delete_note(self, note_id):
