@@ -97,6 +97,21 @@ class Record:
     def add_email(self, email):
         self.emails.append(Email(email))
 
+    # Видаляємо email з запису
+    def remove_email(self, email):
+        email_obj = self.find_email(email)
+        if email_obj:
+            self.emails.remove(email_obj)
+            return True
+        return False
+
+    # Знаходимо email у записі
+    def find_email(self, email):
+        for email_obj in self.emails:
+            if email_obj.value == email:
+                return email_obj
+        return None
+
     def add_birthday(self, birthday):
         self.birthday = Birthday(birthday)
 
@@ -187,6 +202,11 @@ if __name__ == "__main__":
         raise AssertionError("Некоректний email мав бути відхилений.")
     except ValueError:
         pass
+    john_record.add_email("john.work@example.com")
+    assert john_record.find_email("john@example.com") is not None
+    assert john_record.remove_email("john@example.com") is True
+    assert john_record.find_email("john@example.com") is None
+    assert "john.work@example.com" in str(john_record)
 
     # Додавання запису John до адресної книги
     book.add_record(john_record)
