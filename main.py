@@ -1,3 +1,4 @@
+import difflib
 from functools import wraps
 from typing import Dict, List, Tuple, Callable
 from pathlib import Path
@@ -176,6 +177,11 @@ def birthdays(args: CommandArgs, book: AddressBook) -> str:
 
     return "\n".join(f"{item['name']}: {item['congratulation_date']}" for item in upcoming)
 
+KNOWN_COMMANDS = [
+    "close", "exit", "hello", "add", "change", "phone", "all",
+    "add-birthday", "show-birthday", "birthdays",
+]
+
 def main():
     # Відновлення адресної книги з попереднього сеансу
     book = load_data()
@@ -219,7 +225,11 @@ def main():
             print(birthdays(args, book))
 
         else:
-            print("Invalid command.")
+            matches = difflib.get_close_matches(command, KNOWN_COMMANDS)
+            if matches:
+                print(f"Можливо, ви мали на увазі: {matches[0]}?")
+            else:
+                print("Invalid command.")
 
 if __name__ == "__main__":
     main()
