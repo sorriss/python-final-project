@@ -288,6 +288,20 @@ def show_all_notes(args: CommandArgs, notes: NoteBook) -> str:
 
     return result.strip()
 
+# Функція додавання тегу до нотатки
+@input_error
+def add_tag(args: CommandArgs, notes: NoteBook) -> str:
+    if len(args) != 2:
+        raise ValueError("Please provide note id and tag.")
+
+    note_id, tag = args
+    note = notes.find_note(note_id)
+    if note is None:
+        raise KeyError(f"Note {note_id} not found.")
+
+    note.add_tag(tag)
+    return f"Tag {tag} added to note {note_id}."
+
 def main():
     # Відновлення адресної книги з попереднього сеансу
     book = load_data()
@@ -354,6 +368,9 @@ def main():
 
         elif command == "all-notes":
             print(show_all_notes(args, note_book))
+
+        elif command == "add-tag":
+            print(add_tag(args, note_book))
 
         else:
             print("Invalid command.")
