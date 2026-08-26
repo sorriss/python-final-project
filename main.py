@@ -379,8 +379,11 @@ def find_by_tag(args: CommandArgs, notes: NoteBook) -> str:
     return result.strip()
 
 KNOWN_COMMANDS = [
-    "close", "exit", "hello", "add", "change", "phone", "all",
-    "add-birthday", "show-birthday", "birthdays",
+    "close", "exit", "hello", "add", "change", "edit-phone", "remove-phone",
+    "phone", "all", "delete", "add-address", "add-email",
+    "add-birthday", "show-birthday", "birthdays", "search",
+    "add-note", "find-note", "edit-note", "delete-note", "all-notes",
+    "add-tag", "find-by-tag",
 ]
 
 def main():
