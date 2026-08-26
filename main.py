@@ -4,9 +4,11 @@ from pathlib import Path
 import pickle
 
 from addressbook import AddressBook, Record
+from notes import Note, NoteBook
 
 
-DATA_FILE = Path(__file__).resolve().parent / "addressbook.pkl"
+DATA_DIR = Path.home() / ".personal_assistant"
+DATA_FILE = DATA_DIR / "addressbook.pkl"
 
 # Тіпізація для контактів, аргументів команд та розпарсеного вводу
 Contacts = Dict[str, str]
@@ -15,6 +17,9 @@ ParsedInput = Tuple[str, CommandArgs]
 
 # Зберігає адресну книгу у файл за допомогою pickle
 def save_data(book: AddressBook, filename: Path = DATA_FILE) -> None:
+    # Створюємо папку для даних, якщо її ще немає
+    filename.parent.mkdir(parents=True, exist_ok=True)
+
     with open(filename, "wb") as file:
         pickle.dump(book, file)
 
@@ -37,8 +42,8 @@ def input_error(func: Callable) -> Callable:
             return "Not enough arguments provided."
         except ValueError as error: # Обробка помилки значення (наприклад, неправильний формат даних)
             return str(error) if str(error) else "Invalid argument."
-        except KeyError: # Обробка помилки ключа (наприклад, контакт не знайдено)
-            return "Contact not found."
+        except KeyError as error: # Обробка помилки ключа (наприклад, контакт не знайдено)
+            return str(error).strip('"\'') if str(error) else "Contact not found."
 
     return inner
 
@@ -133,6 +138,54 @@ def show_all(book: AddressBook) -> str:
         result += f"{name}: {phones}\n"
     return result.strip()
 
+# Функція видалення контакту
+@input_error
+def delete_contact(args: CommandArgs, book: AddressBook) -> str:
+    # Перевірка на правильну кількість аргументів
+    if len(args) != 1:
+        raise ValueError("Please provide the name of the contact.")
+
+    name = args[0]
+
+    # Видалення контакту або повідомлення про помилку
+    if not book.delete(name):
+        raise KeyError(f"Contact {name} not found.")
+
+    return f"Contact {name} deleted."
+
+# Функція додавання адреси контакту
+@input_error
+def add_address(args: CommandArgs, book: AddressBook) -> str:
+    # Потрібно ввести ім'я та адресу
+    if len(args) < 2:
+        raise ValueError("Please provide the name and address.")
+
+    name = args[0]
+    address = " ".join(args[1:])
+
+    record = book.find(name)
+    if record is None:
+        raise KeyError(f"Contact {name} not found.")
+
+    record.add_address(address)
+    return f"Address for {name} added."
+
+# Функція додавання email контакту
+@input_error
+def add_email(args: CommandArgs, book: AddressBook) -> str:
+    # Потрібно ввести ім'я та один email
+    if len(args) != 2:
+        raise ValueError("Please provide the name and email.")
+
+    name, email = args
+
+    record = book.find(name)
+    if record is None:
+        raise KeyError(f"Contact {name} not found.")
+
+    record.add_email(email)
+    return f"Email for {name} added."
+
 @input_error
 def add_birthday(args: CommandArgs, book: AddressBook) -> str:
     # Перевірка на правильну кількість аргументів
@@ -189,9 +242,83 @@ def search(args: CommandArgs, book: AddressBook) -> str:
 
     return "\n".join(str(record) for record in results)
 
+# Функція додавання нотатки
+@input_error
+def add_note(args: CommandArgs, notes: NoteBook) -> str:
+    if not args:
+        raise ValueError("Please provide note text.")
+
+    text = " ".join(args)
+    note = Note(text)
+    notes.add_note(note)
+    return f"Note added with id: {note.id}"
+
+# Функція пошуку нотатки
+@input_error
+def find_note(args: CommandArgs, notes: NoteBook) -> str:
+    if not args:
+        raise ValueError("Please provide note id or text.")
+
+    query = " ".join(args)
+    note = notes.find_note(query)
+    if note is None:
+        raise KeyError(f"Note {query} not found.")
+
+    return f"{note.id}: {note.text}"
+
+# Функція редагування нотатки
+@input_error
+def edit_note(args: CommandArgs, notes: NoteBook) -> str:
+    if len(args) < 2:
+        raise ValueError("Please provide note id and new text.")
+
+    note_id = args[0]
+    new_text = " ".join(args[1:])
+    notes.edit_note(note_id, new_text)
+    return "Note updated."
+
+# Функція видалення нотатки
+@input_error
+def delete_note(args: CommandArgs, notes: NoteBook) -> str:
+    if len(args) != 1:
+        raise ValueError("Please provide note id.")
+
+    notes.delete_note(args[0])
+    return "Note deleted."
+
+# Функція показу всіх нотаток
+@input_error
+def show_all_notes(args: CommandArgs, notes: NoteBook) -> str:
+    if args:
+        raise ValueError("This command does not take any arguments.")
+
+    if not notes.data:
+        return "No notes found."
+
+    result = "Notes:\n"
+    for note_id, note in notes.data.items():
+        result += f"{note_id}: {note.text}\n"
+
+    return result.strip()
+
+# Функція додавання тегу до нотатки
+@input_error
+def add_tag(args: CommandArgs, notes: NoteBook) -> str:
+    if len(args) != 2:
+        raise ValueError("Please provide note id and tag.")
+
+    note_id, tag = args
+    note = notes.find_note(note_id)
+    if note is None:
+        raise KeyError(f"Note {note_id} not found.")
+
+    note.add_tag(tag)
+    return f"Tag {tag} added to note {note_id}."
+
 def main():
     # Відновлення адресної книги з попереднього сеансу
     book = load_data()
+    note_book = NoteBook()
     print("Welcome to the assistant bot!")
 
     # Запуск циклу для обробки команд користувача
@@ -222,6 +349,15 @@ def main():
         elif command == "all":
             print(show_all(book))
 
+        elif command == "delete":
+            print(delete_contact(args, book))
+
+        elif command == "add-address":
+            print(add_address(args, book))
+
+        elif command == "add-email":
+            print(add_email(args, book))
+
         elif command == "add-birthday":
             print(add_birthday(args, book))
 
@@ -233,6 +369,24 @@ def main():
 
         elif command == "search":
             print(search(args, book))
+
+        elif command == "add-note":
+            print(add_note(args, note_book))
+
+        elif command == "find-note":
+            print(find_note(args, note_book))
+
+        elif command == "edit-note":
+            print(edit_note(args, note_book))
+
+        elif command == "delete-note":
+            print(delete_note(args, note_book))
+
+        elif command == "all-notes":
+            print(show_all_notes(args, note_book))
+
+        elif command == "add-tag":
+            print(add_tag(args, note_book))
 
         else:
             print("Invalid command.")
