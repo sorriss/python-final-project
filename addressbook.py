@@ -144,6 +144,20 @@ class AddressBook(UserDict):
             return True
         return False
 
+    # Шукаємо контакти, де query зустрічається в імені, телефоні, email або адресі
+    def search(self, query):
+        query = query.lower()
+        results = []
+        for record in self.data.values():
+            fields = [record.name.value]
+            fields += [p.value for p in record.phones]
+            fields += [e.value for e in record.emails]
+            if record.address:
+                fields.append(record.address.value)
+            if any(query in field.lower() for field in fields):
+                results.append(record)
+        return results
+
     def get_upcoming_birthdays(self, days=7):
         today = datetime.now().date()
         upcoming = []
@@ -216,6 +230,10 @@ if __name__ == "__main__":
     jane_record.add_phone("9876543210")
     jane_record.add_birthday("18.08.1992")
     book.add_record(jane_record)
+
+    assert book.search("Хрещатик") == [john_record]
+    assert book.search("9876543210") == [jane_record]
+    assert book.search("no-such-substring") == []
 
     # Виведення всіх записів у книзі
     for name, record in book.data.items():
