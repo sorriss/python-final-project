@@ -10,6 +10,14 @@ class Note:
         # Для кожної нотатки створюємо унікальний id
         self.id = str(uuid.uuid4())
 
+        # Список тегів нотатки
+        self.tags = []
+
+    # Додаємо тег до нотатки, уникаючи дублікатів
+    def add_tag(self, tag):
+        if tag not in self.tags:
+            self.tags.append(tag)
+
 
 class NoteBook(UserDict):
     # Додаємо нотатку до словника
