@@ -148,6 +148,39 @@ def delete_contact(args: CommandArgs, book: AddressBook) -> str:
 
     return f"Contact {name} deleted."
 
+# Функція додавання адреси контакту
+@input_error
+def add_address(args: CommandArgs, book: AddressBook) -> str:
+    # Потрібно ввести ім'я та адресу
+    if len(args) < 2:
+        raise ValueError("Please provide the name and address.")
+
+    name = args[0]
+    address = " ".join(args[1:])
+
+    record = book.find(name)
+    if record is None:
+        raise KeyError(f"Contact {name} not found.")
+
+    record.add_address(address)
+    return f"Address for {name} added."
+
+# Функція додавання email контакту
+@input_error
+def add_email(args: CommandArgs, book: AddressBook) -> str:
+    # Потрібно ввести ім'я та один email
+    if len(args) != 2:
+        raise ValueError("Please provide the name and email.")
+
+    name, email = args
+
+    record = book.find(name)
+    if record is None:
+        raise KeyError(f"Contact {name} not found.")
+
+    record.add_email(email)
+    return f"Email for {name} added."
+
 @input_error
 def add_birthday(args: CommandArgs, book: AddressBook) -> str:
     # Перевірка на правильну кількість аргументів
@@ -226,6 +259,12 @@ def main():
 
         elif command == "delete":
             print(delete_contact(args, book))
+
+        elif command == "add-address":
+            print(add_address(args, book))
+
+        elif command == "add-email":
+            print(add_email(args, book))
 
         elif command == "add-birthday":
             print(add_birthday(args, book))
