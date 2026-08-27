@@ -44,4 +44,5 @@ similar one.
 | `all-notes` | Show all notes | `all-notes` |
 | `add-tag <note_id> <tag>` | Add a tag to a note | `add-tag 1 shopping` |
 | `find-by-tag <tag> [tag...]` | Find notes by one or more tags | `find-by-tag shopping urgent` |
+| `sort-by-tags <tag> [tag...]` | Return all notes matching the given tags, ordered by tag priority (notes matching the first tag come first, and so on) | `sort-by-tags urgent shopping` |
 | `close` / `exit` | Save data and quit | `exit` |

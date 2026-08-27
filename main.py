@@ -378,12 +378,31 @@ def find_by_tag(args: CommandArgs, notes: NoteBook) -> str:
 
     return result.strip()
 
+# Функція сортування нотаток у порядку пріоритету вказаних тегів
+@input_error
+def sort_by_tags(args: CommandArgs, notes: NoteBook) -> str:
+    if not args:
+        raise ValueError("Please provide at least one tag.")
+
+    sorted_notes = notes.sort_by_tags(args)
+
+    if not sorted_notes:
+        return "No notes found."
+
+    result = "Notes sorted by tags:\n"
+
+    for note in sorted_notes:
+        tags = ", ".join(note.tags)
+        result += f"{note.id}: {note.text} (tags: {tags})\n"
+
+    return result.strip()
+
 KNOWN_COMMANDS = [
     "close", "exit", "hello", "add", "change", "edit-phone", "remove-phone",
     "phone", "all", "delete", "add-address", "add-email",
     "add-birthday", "show-birthday", "birthdays", "search",
     "add-note", "find-note", "edit-note", "delete-note", "all-notes",
-    "add-tag", "find-by-tag",
+    "add-tag", "find-by-tag", "sort-by-tags",
 ]
 
 def main():
@@ -466,6 +485,9 @@ def main():
 
         elif command == "find-by-tag":
             print(find_by_tag(args,note_book))
+
+        elif command == "sort-by-tags":
+            print(sort_by_tags(args, note_book))
 
         else:
             matches = difflib.get_close_matches(command, KNOWN_COMMANDS)

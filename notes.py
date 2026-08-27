@@ -54,6 +54,24 @@ class NoteBook(UserDict):
 
         return [note for matches, note in result]
 
+    # Повертаємо нотатки, що мають вказані теги, у порядку пріоритету тегів
+    def sort_by_tags(self, tags):
+        if isinstance(tags, str):
+            tags = tags.split()
+
+        result = []
+
+        for note in self.data.values():
+            # Індекс першого тегу зі списку, що збігається з тегами нотатки
+            matched_indexes = [i for i, tag in enumerate(tags) if tag in note.tags]
+
+            if matched_indexes:
+                result.append((min(matched_indexes), note))
+
+        result.sort(key=lambda item: item[0])
+
+        return [note for _, note in result]
+
     # Видаляємо нотатку за id
     def delete_note(self, note_id):
         if note_id not in self.data:
